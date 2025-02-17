@@ -10,13 +10,15 @@ using Seguridad.Interfaces;
 namespace Seguridad.Security;
 public class TokenService : ITokenService
 {
+    private readonly IAESCrypto _aesCrypto;
     private readonly IConfiguration _configuration;
     private readonly UserManager<Usuario> _userManager;
 
-    public TokenService(IConfiguration configuration, UserManager<Usuario> userManager)
+    public TokenService(IConfiguration configuration, UserManager<Usuario> userManager, IAESCrypto aesCrypto)
     {
         _configuration = configuration;
         _userManager = userManager;
+        _aesCrypto = aesCrypto;
     }
 
     public async Task<string> CreateToken(Usuario usuario)
@@ -25,9 +27,9 @@ public class TokenService : ITokenService
 
         var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.Name, usuario.UserName!),
-            new Claim(ClaimTypes.NameIdentifier, usuario.Id),
-            new Claim(ClaimTypes.Email, usuario.Email!)
+            new Claim(ClaimTypes.Name, _aesCrypto.Encrypt(usuario.UserName!)),
+            new Claim(ClaimTypes.NameIdentifier, _aesCrypto.Encrypt(usuario.Id)),
+            new Claim(ClaimTypes.Email, _aesCrypto.Encrypt(usuario.Email!))
         };
 
         foreach (var role in roles)
@@ -58,8 +60,8 @@ public class TokenService : ITokenService
     public string CreateEmailConfirmationToken(Usuario usuario)
     {
         var claims = new List<Claim>{
-            new Claim(ClaimTypes.NameIdentifier, usuario.Id),
-            new Claim(ClaimTypes.Email, usuario.Email!)
+            new Claim(ClaimTypes.NameIdentifier, _aesCrypto.Encrypt(usuario.Id)),
+            new Claim(ClaimTypes.Email, _aesCrypto.Encrypt(usuario.Email!))
         };
         var creds = new SigningCredentials(
             new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["TokenKey"]!)),
@@ -94,7 +96,22 @@ public class TokenService : ITokenService
                 ClockSkew = TimeSpan.Zero
             };
 
-            principal = tokenHandler.ValidateToken(token, validationParameters, out _);
+            var validatedPrincipal = tokenHandler.ValidateToken(token, validationParameters, out _);
+
+            var claimsIdentity = validatedPrincipal.Identity as ClaimsIdentity;
+            if (claimsIdentity != null)
+            {
+                var encryptedId = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var encryptedEmail = claimsIdentity.FindFirst(ClaimTypes.Email)?.Value;
+
+                var decryptedClaims = new List<Claim>
+                {
+                new Claim(ClaimTypes.NameIdentifier, _aesCrypto.Decrypt(encryptedId!)),
+                new Claim(ClaimTypes.Email, _aesCrypto.Decrypt(encryptedEmail!)),
+                };
+                var newClaimsIdentity = new ClaimsIdentity(decryptedClaims, claimsIdentity.AuthenticationType);
+                principal = new ClaimsPrincipal(newClaimsIdentity);
+            }
             return true;
         }
         catch (Exception ex)

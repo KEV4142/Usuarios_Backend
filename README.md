@@ -33,6 +33,8 @@ Este repositorio contiene el backend de una aplicación para la gestión de usua
    SENDERNAME= [Campo brindado por Brevo]
    USERNAME= [Campo brindado por Brevo]
    PASSWORD= [Campo brindado por Brevo]
+   AES_KEY = [Campo tipo string aleatorio 32 bits]
+   AES_IV = [Campo tipo string aleatorio 16 bits]
    FRONTEND_ORIGIN=*
    BACKEND_ORIGIN=*
    #PORT=5000
@@ -74,6 +76,7 @@ Puedes desplegar este proyecto en cualquier servicio compatible, como Azure App 
 - **Supabase**: Almacenamiento para motor de base de datos.
 - **PostgreSQL**: Base de datos relacional.
 - **Brevo**: Servicio de correo electrónico.
+- **JWT**: JWT con segunda capa de seguridad.
 
 
 ## Licencia

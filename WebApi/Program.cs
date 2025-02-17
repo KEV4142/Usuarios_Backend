@@ -30,7 +30,9 @@ builder.Configuration
         { "EmailSettings:SenderEmail", Environment.GetEnvironmentVariable("SENDEREMAIL")! },
         { "EmailSettings:SenderName", Environment.GetEnvironmentVariable("SENDERNAME")! },
         { "EmailSettings:Username", Environment.GetEnvironmentVariable("USERNAME")! },
-        { "EmailSettings:Password", Environment.GetEnvironmentVariable("PASSWORD")! }
+        { "EmailSettings:Password", Environment.GetEnvironmentVariable("PASSWORD")! },
+        { "Encryption:Key", Environment.GetEnvironmentVariable("AES_KEY")! },
+        { "Encryption:IV", Environment.GetEnvironmentVariable("AES_IV")! }
     });
 
 var cultureInfo = new CultureInfo("en-US");

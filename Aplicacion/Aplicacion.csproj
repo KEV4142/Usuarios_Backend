@@ -2,7 +2,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Repositorio\Repositorio.csproj" />
-    <ProjectReference Include="..\Seguridad\Seguridad.csproj" />
   </ItemGroup>
 
   <ItemGroup>
